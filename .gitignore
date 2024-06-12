@@ -1,0 +1,16 @@
+/vendor/
+composer.lock
+.idea/
+.vscode/
+/log/
+/cache/
+.env
+.env.local
+.env.*.local
+/build/
+/public/build/
+*.swp
+.DS_Store
+/script/data-source/communes-departements-regions.csv
+/script/data-source/dela-fr-public-u8.dic.xml
+/script/data-source/french-surnames.html

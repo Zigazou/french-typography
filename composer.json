@@ -1,0 +1,23 @@
+{
+    "name": "zigazou/french-typography",
+    "description": "Apply french typography to an HTML string",
+    "type": "library",
+    "require-dev": {
+        "phpunit/phpunit": "^10"
+    },
+    "license": "GNU General Public License v3.0 or later",
+    "autoload": {
+        "psr-4": {
+            "Zigazou\\FrenchTypography\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Frédéric BISSON",
+            "email": "zigazou@protonmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {}
+}
