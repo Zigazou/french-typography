@@ -2,6 +2,7 @@
 namespace Zigazou\FrenchTypography;
 
 use Zigazou\FrenchTypography\Operation;
+use Zigazou\FrenchTypography\FlatEditableHTML;
 
 class Correcteur
 {
@@ -116,15 +117,6 @@ class Correcteur
             }
         }
 
-        // Apply stylistic ligatures.
-        $word = str_replace(
-            ['ffl', 'ffi', 'fl', 'fi', 'ff'],
-            //'st'],
-            ['ﬄ', 'ﬃ', 'ﬂ', 'ﬁ', 'ﬀ'],
-            //'ﬆ'],
-            $word
-        );
-
         return $word;
     }
 
@@ -144,17 +136,17 @@ class Correcteur
         // No space before, one space after dot and comma.
         $string = preg_replace('/\s*([.,])\p{Zs}*/u', '\1 ', $string);
 
-        // One no-break space before, one space after semicolon, colon,
+        // One thin-space before, one space after semicolon, colon,
         // exclamation mark and question mark.
-        $string = preg_replace('/\s*([;:!?])\p{Zs}*/u', ' \1 ', $string);
+        $string = preg_replace('/\s*([;:!?])\p{Zs}*/u', ' \1 ', $string);
 
         // Converts english double quotes to french guillemets.
         if (!$last) {
             $string = preg_replace('/"$/u', '«', $string);
         }
         $string = preg_replace('/ ?"([ .,)]|\R|)/u', '»\1', $string);
-        $string = preg_replace('/«\p{Zs}*/u', '« ', $string);
-        $string = preg_replace('/\p{Zs}*»/u', ' »', $string);
+        $string = preg_replace('/«\p{Zs}*/u', '« ', $string);
+        $string = preg_replace('/\p{Zs}*»/u', ' »', $string);
 
         // Clean spaces.
         $string = self::cleanSpaces($string);
@@ -169,7 +161,6 @@ class Correcteur
     public static function correctUnit(string $string, bool $first): string
     {
         $string = ' ' . ltrim($string);
-        // $elements[$index - 1] = rtrim($elements[$index - 1]);
 
         return $string;
     }
@@ -177,13 +168,18 @@ class Correcteur
     public static function correctPhone(string $text): string
     {
         $text = preg_replace('/[^\d]/u', '', $text);
-        $text = preg_replace('/(\d\d)(?=\d)/u', '\1 ', $text);
+        $text = preg_replace('/(\d\d)(?=\d)/u', '\1 ', $text);
         return $text;
     }
-    public static function corriger(string $text): string
+    public static function corriger(string $text, bool $isHTML=FALSE): string
     {
         if ($text === '') {
             return '';
+        }
+
+        if ($isHTML) {
+            $html = FlatEditableHTML::fromString($text);
+            $text = html_entity_decode($html->codes, ENT_QUOTES | ENT_HTML5);
         }
 
         $types = self::splitElements($text);
@@ -213,6 +209,14 @@ class Correcteur
             $elements[$index] = $element;
         }
 
-        return implode('', $elements);
+        if ($isHTML) {
+            $html->codes = htmlspecialchars(
+                implode('', $elements),
+                ENT_QUOTES | ENT_HTML5
+            );
+            return (string) $html;
+        } else {
+            return implode('', $elements);
+        }
     }
 }

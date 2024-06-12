@@ -8,7 +8,6 @@ class Char
 
     public static function isWordCharacter(?string $string): bool
     {
-
         return ($string === null)
             || (preg_match(self::VALID_UTF8_WORD_CHARACTER, $string) === 1);
     }
