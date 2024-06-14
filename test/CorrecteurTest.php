@@ -9,6 +9,8 @@ final class CorrecteurTest extends TestCase
         $tests = [
             '' => [
                 'all' => [],
+                'inlinetag' => [],
+                'blocktag' => [],
                 'phone' => [],
                 'unit' => [],
                 'number' => [],
@@ -17,6 +19,8 @@ final class CorrecteurTest extends TestCase
             ],
             ' ' => [
                 'all' => [' '],
+                'inlinetag' => [null],
+                'blocktag' => [null],
                 'phone' => [null],
                 'unit' => [null],
                 'number' => [null],
@@ -25,6 +29,8 @@ final class CorrecteurTest extends TestCase
             ],
             'a' => [
                 'all' => ['a'],
+                'inlinetag' => [null],
+                'blocktag' => [null],
                 'phone' => [null],
                 'unit' => [null],
                 'number' => [null],
@@ -33,6 +39,8 @@ final class CorrecteurTest extends TestCase
             ],
             ' a ' => [
                 'all' => [' ', 'a', ' '],
+                'inlinetag' => [null, null, null],
+                'blocktag' => [null, null, null],
                 'phone' => [null, null, null],
                 'unit' => [null, null, null],
                 'number' => [null, null, null],
@@ -41,6 +49,8 @@ final class CorrecteurTest extends TestCase
             ],
             '1a1' => [
                 'all' => ['1', 'a', '1'],
+                'inlinetag' => [null, null, null],
+                'blocktag' => [null, null, null],
                 'phone' => [null, null, null],
                 'unit' => [null, null, null],
                 'number' => ['1', null, '1'],
@@ -49,6 +59,8 @@ final class CorrecteurTest extends TestCase
             ],
             '1€' => [
                 'all' => ['1', '€'],
+                'inlinetag' => [null, null],
+                'blocktag' => [null, null],
                 'phone' => [null, null],
                 'unit' => [null, '€'],
                 'number' => ['1', null],
@@ -57,6 +69,8 @@ final class CorrecteurTest extends TestCase
             ],
             '/a/' => [
                 'all' => ['/', 'a', '/'],
+                'inlinetag' => [null, null, null],
+                'blocktag' => [null, null, null],
                 'phone' => [null, null, null],
                 'unit' => [null, null, null],
                 'number' => [null, null, null],
@@ -65,6 +79,8 @@ final class CorrecteurTest extends TestCase
             ],
             '1 €' => [
                 'all' => ['1', ' €'],
+                'inlinetag' => [null, null],
+                'blocktag' => [null, null],
                 'phone' => [null, null],
                 'unit' => [null, ' €'],
                 'number' => ['1', null],
@@ -73,6 +89,8 @@ final class CorrecteurTest extends TestCase
             ],
             '1k€' => [
                 'all' => ['1', 'k€'],
+                'inlinetag' => [null, null],
+                'blocktag' => [null, null],
                 'phone' => [null, null],
                 'unit' => [null, 'k€'],
                 'number' => ['1', null],
@@ -81,6 +99,8 @@ final class CorrecteurTest extends TestCase
             ],
             '1 k€' => [
                 'all' => ['1', ' k€'],
+                'inlinetag' => [null, null],
+                'blocktag' => [null, null],
                 'phone' => [null, null],
                 'unit' => [null, ' k€'],
                 'number' => ['1', null],
@@ -89,6 +109,8 @@ final class CorrecteurTest extends TestCase
             ],
             '100 000 000 €' => [
                 'all' => ['100 000 000', ' €'],
+                'inlinetag' => [null, null],
+                'blocktag' => [null, null],
                 'phone' => [null, null],
                 'unit' => [null, ' €'],
                 'number' => ['100 000 000', null],
@@ -97,11 +119,33 @@ final class CorrecteurTest extends TestCase
             ],
             '100.000.000 €' => [
                 'all' => ['100.000.000', ' €'],
+                'inlinetag' => [null, null],
+                'blocktag' => [null, null],
                 'phone' => [null, null],
                 'unit' => [null, ' €'],
                 'number' => ['100.000.000', null],
                 'word' => [null, null],
                 'other' => [null, null],
+            ],
+            "a\x1Da" => [
+                'all' => ["a", "\x1D", "a"],
+                'inlinetag' => [null, null, null],
+                'blocktag' => [null, "\x1D", null],
+                'phone' => [null, null, null],
+                'unit' => [null, null, null],
+                'number' => [null, null, null],
+                'word' => ["a", null, "a"],
+                'other' => [null, null, null],
+            ],
+            "a\x1Ea" => [
+                'all' => ["a", "\x1E", "a"],
+                'inlinetag' => [null, "\x1E", null],
+                'blocktag' => [null, null, null],
+                'phone' => [null, null, null],
+                'unit' => [null, null, null],
+                'number' => [null, null, null],
+                'word' => ["a", null, "a"],
+                'other' => [null, null, null],
             ],
         ];
 
@@ -111,7 +155,8 @@ final class CorrecteurTest extends TestCase
         }
     }
 
-    public function testCorrectUnit(): void {
+    public function testCorrectUnit(): void
+    {
         $tests = [
             " €" => " €",
         ];
@@ -208,6 +253,8 @@ final class CorrecteurTest extends TestCase
             "0999999999" => "09 99 99 99 99",
             "a b" => "a b",
             "a&nbsp;b" => "a b",
+            " <strong> a </strong> " => "<strong> a </strong>",
+            "a <strong> b </strong> c" => "a <strong> b </strong> c",
         ];
 
         foreach ($tests as $string => $expected) {

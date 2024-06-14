@@ -3,7 +3,7 @@
     "description": "Apply french typography to an HTML string",
     "type": "library",
     "require-dev": {
-        "phpunit/phpunit": "^10"
+        "phpunit/phpunit": "^11.2"
     },
     "license": "GPL-3.0-or-later",
     "autoload": {
@@ -18,6 +18,5 @@
         }
     ],
     "minimum-stability": "dev",
-    "prefer-stable": true,
-    "require": {}
+    "prefer-stable": true
 }
