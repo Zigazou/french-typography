@@ -14,3 +14,4 @@ composer.lock
 /script/data-source/communes-departements-regions.csv
 /script/data-source/dela-fr-public-u8.dic.xml
 /script/data-source/french-surnames.html
+cachegrind.out.*

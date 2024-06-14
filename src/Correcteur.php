@@ -108,7 +108,7 @@ class Correcteur
    * 
    * @var string
    */
-  const BLOCK_TAG =  '\pZ*' . FlatEditableHTML::BLOCKTAGCODE . '\pZ*';
+  const BLOCK_TAG = '\pZ*' . FlatEditableHTML::BLOCKTAGCODE . '\pZ*';
 
   /**
    * Regular expression for splitting a text into elements of type phone, unit
@@ -358,15 +358,22 @@ class Correcteur
    */
   public static function corriger(string $text, bool $isHTML = FALSE): string
   {
+    // If the text is empty, we don't need to do anything.
     if ($text === '') {
       return '';
     }
 
+    // If the text is an HTML text, we need to convert it to a flat editable
+    // HTML. Corrections aren't to be applied on the HTML tags, this will allow
+    // later to convert the flat editable HTML back to HTML.
+    // A decoding a HTML entities is done, thus avoiding having to test for
+    // special chars and their entities counterparts.
     if ($isHTML) {
       $html = FlatEditableHTML::fromString($text);
       $text = html_entity_decode($html->codes, ENT_QUOTES | ENT_HTML5);
     }
 
+    // Extract the different elements of the text.
     $types = self::splitElements($text);
     $inlineTags = &$types['inlinetag'];
     $blockTags = &$types['blocktag'];
@@ -376,13 +383,18 @@ class Correcteur
     $words = &$types['word'];
     $others = &$types['other'];
 
+    // Determine indexes of the first and last elements.
     $firstIndex = 0;
     $lastIndex = count($elements) - 1;
 
+    // Correct each element individually.
     foreach ($elements as $index => $element) {
+      // Determine if this is the first and/or last element.
       $first = $index === $firstIndex;
       $last = $index === $lastIndex;
 
+      // Correct the element according to its type. Type is guessed by testing
+      // if the element is not null.
       if ($inlineTags[$index]) {
         $element = self::correctInlineTag($element, $first, $last);
       } else if ($blockTags[$index]) {
@@ -400,14 +412,15 @@ class Correcteur
       $elements[$index] = $element;
     }
 
+    // Recombine all elements.
+    $text = implode('', $elements);
+
+    // Restore the HTML tags if the text is an HTML text.
     if ($isHTML) {
-      $html->codes = htmlspecialchars(
-        implode('', $elements),
-        ENT_QUOTES | ENT_HTML5
-      );
-      return (string) $html;
+      $html->codes = htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
+      $text = (string) $html;
     }
 
-    return implode('', $elements);
+    return $text;
   }
 }
