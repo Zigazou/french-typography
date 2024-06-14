@@ -6,12 +6,41 @@ use Zigazou\FrenchTypography\HTML\TagType;
 
 class FlatEditableHTML implements \Stringable
 {
+    /**
+     * Single byte used to identify a block tag.
+     * 
+     * @var string
+     */
     const BLOCKTAGCODE = "\x1D";
+
+    /**
+     * Single byte used to identify an inline tag.
+     * 
+     * @var string
+     */
     const INLINETAGCODE = "\x1E";
 
+    /**
+     * String where the opening and closing tags are replaced by a single byte.
+     * 
+     * It is synchronised with the tags array.
+     * 
+     * @var string
+     */
     public string $codes = '';
+
+    /**
+     * List of tags in the order they appear in the text.
+     * 
+     * @var array
+     */
     protected array $tags = [];
 
+    /**
+     * Push an element to the flat editable HTML.
+     * 
+     * @param HTMLElement $element The element to push.
+     */
     public function push(HTMLElement $element): void
     {
         if ($element->isTag()) {
@@ -27,6 +56,14 @@ class FlatEditableHTML implements \Stringable
         }
     }
 
+    /**
+     * Create a flat editable HTML from a string, another flat editable HTML or
+     * an HTML element.
+     *
+     * @param HTMLElement|FlatEditableHTML|string $element The element to
+     *  convert.
+     * @return FlatEditableHTML The flat editable HTML.
+     */
     public static function fromMixed(HTMLElement|FlatEditableHTML|string $element): FlatEditableHTML
     {
         if ($element instanceof FlatEditableHTML) {
@@ -43,6 +80,13 @@ class FlatEditableHTML implements \Stringable
         return $feh;
     }
 
+    /**
+     * Count the number of tags in a range.
+     * 
+     * @param int $start The start position.
+     * @param int $length The length of the range.
+     * @return int The number of tags in the range.
+     */
     public function countTagsInRange(int $start, int $length): int
     {
         if ($length < 0 || $start < 0 || $start >= mb_strlen($this->codes)) {
@@ -64,6 +108,12 @@ class FlatEditableHTML implements \Stringable
         return $tagCount;
     }
 
+    /**
+     * Delete a range of characters.
+     * 
+     * @param int $start The start position.
+     * @param int $length The length of the range.
+     */
     public function delete(int $start, int $length): void
     {
         // Ensure position is valid.
@@ -85,7 +135,15 @@ class FlatEditableHTML implements \Stringable
         );
     }
 
-    public function substr(int $start, int $length): FlatEditableHTML {
+    /**
+     * Extract a substring.
+     * 
+     * @param int $start The start position.
+     * @param int $length The length of the substring.
+     * @return FlatEditableHTML The extracted substring.
+     */
+    public function substr(int $start, int $length): FlatEditableHTML
+    {
         $feh = FlatEditableHTML::fromMixed($this);
         $feh->delete($start + $length, mb_strlen($this->codes));
         $feh->delete(0, $start);
@@ -93,6 +151,12 @@ class FlatEditableHTML implements \Stringable
         return $feh;
     }
 
+    /**
+     * Insert an element at a given position.
+     * 
+     * @param HTMLElement|FlatEditableHTML|string $element Element to insert.
+     * @param int $position The position where to insert the element.
+     */
     public function insert(HTMLElement|FlatEditableHTML|string $element, int $position): void
     {
         // Ensure position is valid.
@@ -116,6 +180,12 @@ class FlatEditableHTML implements \Stringable
         );
     }
 
+    /**
+     * Convert a string to a FlatEditableHTML object.
+     * 
+     * @param string $string The string to convert.
+     * @return FlatEditableHTML The FlatEditableHTML object.
+     */
     public static function fromString(string $string): FlatEditableHTML
     {
         $codes = preg_split(
@@ -133,6 +203,11 @@ class FlatEditableHTML implements \Stringable
         return $feh;
     }
 
+    /**
+     * Convert the flat editable HTML to a string.
+     * 
+     * @return string The string representation of the flat editable HTML.
+     */
     public function __toString(): string
     {
         $output = '';
