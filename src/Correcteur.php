@@ -140,17 +140,6 @@ class Correcteur
     . ')/u';
 
   /**
-   * Removes spaces around punctuation marks.
-   * 
-   * @param string $string The string to clean.
-   * @return string The cleaned string.
-   */
-  public static function cleanSpaces(string $string): string
-  {
-    return preg_replace(self::CLEANSPACES, '\1', $string);
-  }
-
-  /**
    * Splits a text into elements of type phone, unit, number, word or anything
    * else.
    * 
@@ -173,14 +162,14 @@ class Correcteur
     );
 
     return [
-      'all' => $matches[0],
-      'inlinetag' => $matches['inlinetag'],
-      'blocktag' => $matches['blocktag'],
-      'phone' => $matches['phone'],
-      'unit' => $matches['unit'],
-      'number' => $matches['number'],
-      'word' => $matches['word'],
-      'other' => $matches['other'],
+      'all' => &$matches[0],
+      'inlinetag' => array_filter($matches['inlinetag']),
+      'blocktag' => array_filter($matches['blocktag']),
+      'phone' => array_filter($matches['phone']),
+      'unit' => array_filter($matches['unit']),
+      'number' => array_filter($matches['number']),
+      'word' => array_filter($matches['word']),
+      'other' => array_filter($matches['other']),
     ];
   }
 
@@ -253,9 +242,6 @@ class Correcteur
     static $unicodeTo;
     require_once (__DIR__ . "/frenchtypo.unicode.php");
 
-    // Corrects supernumerary characters.
-    $string = preg_replace('/\.\.\.*/u', '...', $string);
-
     // Converts ascii characters to dedicated Unicode characters.
     $string = str_replace($unicodeFrom, $unicodeTo, $string);
 
@@ -267,19 +253,21 @@ class Correcteur
     $string = preg_replace('/\s*([;:!?])\p{Zs}*/u', ' \1 ', $string);
 
     // Converts english double quotes to french guillemets.
-    if (!$last) {
-      $string = preg_replace('/"$/u', '«', $string);
+    if (!$last && mb_substr($string, -1, 1) === '"') {
+      $string = mb_substr($string, 0, -1) . '«';
     }
+
     $string = preg_replace('/ ?"([ .,)]|\R|)/u', '»\1', $string);
     $string = preg_replace('/«\p{Zs}*/u', '« ', $string);
     $string = preg_replace('/\p{Zs}*»/u', ' »', $string);
 
     // Clean spaces.
-    $string = self::cleanSpaces($string);
     if ($first)
       $string = ltrim($string);
     if ($last)
       $string = rtrim($string);
+
+    $string = preg_replace(self::CLEANSPACES, '\1', $string);
 
     return $string;
   }
@@ -323,13 +311,11 @@ class Correcteur
    */
   public static function correctInlineTag(string $text, bool $first, bool $last): string
   {
-    if ($first) {
+    if ($first)
       $text = ltrim($text);
-    }
 
-    if ($last) {
+    if ($last)
       $text = rtrim($text);
-    }
 
     $text = preg_replace('/\pZ+/u', ' ', $text);
 
@@ -375,9 +361,9 @@ class Correcteur
 
     // Extract the different elements of the text.
     $types = self::splitElements($text);
+    $elements = &$types['all'];
     $inlineTags = &$types['inlinetag'];
     $blockTags = &$types['blocktag'];
-    $elements = &$types['all'];
     $units = &$types['unit'];
     $phones = &$types['phone'];
     $words = &$types['word'];
@@ -387,29 +373,35 @@ class Correcteur
     $firstIndex = 0;
     $lastIndex = count($elements) - 1;
 
-    // Correct each element individually.
-    foreach ($elements as $index => $element) {
-      // Determine if this is the first and/or last element.
+    foreach ($inlineTags as $index => $element) {
       $first = $index === $firstIndex;
       $last = $index === $lastIndex;
+      $elements[$index] = self::correctInlineTag($element, $first, $last);
+    }
 
-      // Correct the element according to its type. Type is guessed by testing
-      // if the element is not null.
-      if ($inlineTags[$index]) {
-        $element = self::correctInlineTag($element, $first, $last);
-      } else if ($blockTags[$index]) {
-        $element = self::correctBlockTag($element, $first, $last);
-      } else if ($words[$index]) {
-        $element = self::correctWord($element);
-      } else if ($units[$index]) {
-        $element = self::correctUnit($element, $first);
-      } else if ($phones[$index]) {
-        $element = self::correctPhone($element);
-      } else if ($others[$index]) {
-        $element = self::correctOther($element, $first, $last);
-      }
+    foreach ($blockTags as $index => $element) {
+      $first = $index === $firstIndex;
+      $last = $index === $lastIndex;
+      $elements[$index] = self::correctBlockTag($element, $first, $last);
+    }
 
-      $elements[$index] = $element;
+    foreach ($words as $index => $element) {
+      $elements[$index] = self::correctWord($element);
+    }
+
+    foreach ($units as $index => $element) {
+      $first = $index === $firstIndex;
+      $elements[$index] = self::correctUnit($element, $first);
+    }
+    
+    foreach ($phones as $index => $element) {
+      $elements[$index] = self::correctPhone($element);
+    }
+
+    foreach ($others as $index => $element) {
+      $first = $index === $firstIndex;
+      $last = $index === $lastIndex;
+      $elements[$index] = self::correctOther($element, $first, $last);
     }
 
     // Recombine all elements.
