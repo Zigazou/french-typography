@@ -194,6 +194,7 @@ final class CorrecteurTest extends TestCase
     $tests = [
       'Economie' => 'Économie',
       'boeuf' => 'bœuf',
+      NULL => '',
       '' => '',
       ' ' => '',
       '  ' => '',

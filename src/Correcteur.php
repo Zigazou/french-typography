@@ -390,9 +390,9 @@ class Correcteur {
    * @return string
    *   The corrected text.
    */
-  public static function corriger(string $text, bool $isHTML = FALSE): string {
+  public static function corriger(string|null $text, bool $isHTML = FALSE): string {
     // If the text is empty, we don't need to do anything.
-    if ($text === '') {
+    if ($text === '' || $text === NULL) {
       return '';
     }
 
