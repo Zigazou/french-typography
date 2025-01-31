@@ -1,79 +1,92 @@
 <?php
+
 namespace Zigazou\FrenchTypography;
 
 use Zigazou\FrenchTypography\HTML\HTMLElement;
 use Zigazou\FrenchTypography\HTML\TagType;
 
-class FlatEditableHTML implements \Stringable
-{
+/**
+ * Class FlatEditableHTML.
+ *
+ * This class represents a flat editable HTML structure where tags are replaced
+ * by single bytes and can be manipulated easily.
+ */
+class FlatEditableHTML implements \Stringable {
   /**
    * Single byte used to identify a block tag.
-   * 
+   *
    * @var string
    */
   const BLOCKTAGCODE = "\x1D";
 
   /**
    * Single byte used to identify an inline tag.
-   * 
+   *
    * @var string
    */
   const INLINETAGCODE = "\x1E";
 
   /**
    * String where the opening and closing tags are replaced by a single byte.
-   * 
+   *
    * It is synchronised with the tags array.
-   * 
+   *
    * @var string
    */
   public string $codes = '';
 
   /**
    * List of tags in the order they appear in the text.
-   * 
+   *
    * @var array
    */
   protected array $tags = [];
 
   /**
    * Push an element to the flat editable HTML.
-   * 
-   * @param HTMLElement $element The element to push.
+   *
+   * @param \Zigazou\FrenchTypography\HTML\HTMLElement $element
+   *   The element to push.
    */
-  public function push(HTMLElement $element): void
-  {
+  public function push(HTMLElement $element): void {
     if ($element->isTag()) {
       if (TagType::isInline($element->tagName)) {
         $this->codes .= self::INLINETAGCODE;
-      } else {
+      }
+      else {
         $this->codes .= self::BLOCKTAGCODE;
       }
 
       $this->tags[] = $element->string;
-    } else {
+    }
+    else {
       $this->codes .= $element->string;
     }
   }
 
   /**
-   * Create a flat editable HTML from a string, another flat editable HTML or
-   * an HTML element.
+   * Create a flat editable HTML from mixed content.
    *
-   * @param HTMLElement|FlatEditableHTML|string $element The element to
-   *  convert.
-   * @return FlatEditableHTML The flat editable HTML.
+   * Mixed content can be a string, another flat editable HTML or an HTML
+   * element.
+   *
+   * @param \Zigazou\FrenchTypography\HTML\HTMLElement|FlatEditableHTML|string $element
+   *   The element to convert.
+   *
+   * @return FlatEditableHTML
+   *   The flat editable HTML.
    */
-  public static function fromMixed(HTMLElement|FlatEditableHTML|string $element): FlatEditableHTML
-  {
+  public static function fromMixed(HTMLElement|FlatEditableHTML|string $element): FlatEditableHTML {
     if ($element instanceof FlatEditableHTML) {
       $feh = new FlatEditableHTML();
       $feh->codes = $element->codes;
       $feh->tags = $element->tags;
-    } else if ($element instanceof HTMLElement) {
+    }
+    elseif ($element instanceof HTMLElement) {
       $feh = new FlatEditableHTML();
       $feh->push($element);
-    } else {
+    }
+    else {
       $feh = FlatEditableHTML::fromString($element);
     }
 
@@ -82,13 +95,16 @@ class FlatEditableHTML implements \Stringable
 
   /**
    * Count the number of tags in a range.
-   * 
-   * @param int $start The start position.
-   * @param int $length The length of the range.
-   * @return int The number of tags in the range.
+   *
+   * @param int $start
+   *   The start position.
+   * @param int $length
+   *   The length of the range.
+   *
+   * @return int
+   *   The number of tags in the range.
    */
-  public function countTagsInRange(int $start, int $length): int
-  {
+  public function countTagsInRange(int $start, int $length): int {
     if ($length < 0 || $start < 0 || $start >= mb_strlen($this->codes)) {
       return 0;
     }
@@ -110,12 +126,13 @@ class FlatEditableHTML implements \Stringable
 
   /**
    * Delete a range of characters.
-   * 
-   * @param int $start The start position.
-   * @param int $length The length of the range.
+   *
+   * @param int $start
+   *   The start position.
+   * @param int $length
+   *   The length of the range.
    */
-  public function delete(int $start, int $length): void
-  {
+  public function delete(int $start, int $length): void {
     // Ensure position is valid.
     if ($start < 0 || $start >= mb_strlen($this->codes)) {
       return;
@@ -137,13 +154,16 @@ class FlatEditableHTML implements \Stringable
 
   /**
    * Extract a substring.
-   * 
-   * @param int $start The start position.
-   * @param int $length The length of the substring.
-   * @return FlatEditableHTML The extracted substring.
+   *
+   * @param int $start
+   *   The start position.
+   * @param int $length
+   *   The length of the substring.
+   *
+   * @return FlatEditableHTML
+   *   The extracted substring.
    */
-  public function substr(int $start, int $length): FlatEditableHTML
-  {
+  public function substr(int $start, int $length): FlatEditableHTML {
     $feh = FlatEditableHTML::fromMixed($this);
     $feh->delete($start + $length, mb_strlen($this->codes));
     $feh->delete(0, $start);
@@ -153,12 +173,13 @@ class FlatEditableHTML implements \Stringable
 
   /**
    * Insert an element at a given position.
-   * 
-   * @param HTMLElement|FlatEditableHTML|string $element Element to insert.
-   * @param int $position The position where to insert the element.
+   *
+   * @param \Zigazou\FrenchTypography\HTML\HTMLElement|FlatEditableHTML|string $element
+   *   Element to insert.
+   * @param int $position
+   *   The position where to insert the element.
    */
-  public function insert(HTMLElement|FlatEditableHTML|string $element, int $position): void
-  {
+  public function insert(HTMLElement|FlatEditableHTML|string $element, int $position): void {
     // Ensure position is valid.
     if ($position < 0 || $position > mb_strlen($this->codes)) {
       return;
@@ -182,12 +203,14 @@ class FlatEditableHTML implements \Stringable
 
   /**
    * Convert a string to a FlatEditableHTML object.
-   * 
-   * @param string $string The string to convert.
-   * @return FlatEditableHTML The FlatEditableHTML object.
+   *
+   * @param string $string
+   *   The string to convert.
+   *
+   * @return FlatEditableHTML
+   *   The FlatEditableHTML object.
    */
-  public static function fromString(string $string): FlatEditableHTML
-  {
+  public static function fromString(string $string): FlatEditableHTML {
     $codes = preg_split(
       '/(<[^>]+>)/su',
       $string,
@@ -205,11 +228,11 @@ class FlatEditableHTML implements \Stringable
 
   /**
    * Convert the flat editable HTML to a string.
-   * 
-   * @return string The string representation of the flat editable HTML.
+   *
+   * @return string
+   *   The string representation of the flat editable HTML.
    */
-  public function __toString(): string
-  {
+  public function __toString(): string {
     $output = '';
     $btc = self::BLOCKTAGCODE;
     $itc = self::INLINETAGCODE;
@@ -224,11 +247,13 @@ class FlatEditableHTML implements \Stringable
     foreach ($codes as $code) {
       if ($code === self::INLINETAGCODE || $code === self::BLOCKTAGCODE) {
         $output .= array_pop($tags);
-      } else {
+      }
+      else {
         $output .= $code;
       }
     }
 
     return $output;
   }
+
 }
