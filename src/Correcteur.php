@@ -120,7 +120,7 @@ class Correcteur {
    *
    * @var string
    */
-  const INLINE_TAG = '\pZ*' . FlatEditableHTML::INLINETAGCODE . '\pZ*';
+  const INLINE_TAG = '\pZ*' . FlatEditableHTML::INLINETAGCODE;
 
   /**
    * Regular expression for a block tag.
