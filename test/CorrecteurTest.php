@@ -320,6 +320,7 @@ final class CorrecteurTest extends TestCase {
       "Hello <a href=\"https://example.com\">World</a>!" => "Hello <a href=\"https://example.com\">World</a> !",
       "Hello <a href=\"https://example.com\">World</a>:Coucou le monde" => "Hello <a href=\"https://example.com\">World</a> : Coucou le monde",
       "Hello<strong> <a href=\"https://example.com\">World</a></strong>:Coucou le monde" => "Hello<strong> <a href=\"https://example.com\">World</a></strong> : Coucou le monde",
+      "Inférieur à 350 : 0,36€ (0,43€) - Accueil exceptionnel : 0,43€ (0,51€)" => "Inférieur à 350 : 0,36 € (0,43 €) - Accueil exceptionnel : 0,43 € (0,51 €)",
     ];
 
     $index = 0;
