@@ -85,6 +85,21 @@ class Correcteur {
   // phpcs:enable
 
   /**
+   * Regular expression for a URL.
+   *
+   * Matches either a full URL with a scheme (e.g. https://example.com) or a
+   * bare domain name starting with a lowercase letter (e.g. example.com).
+   *
+   * @var string
+   */
+  // phpcs:disable
+  const URL = '(?'
+    . '|\pL+:\/\/\S+'
+    . '|\p{Ll}[\pL\d]*(?:\.\p{Ll}[\pL\d]*)+(?:\/\S*)?'
+    . ')';
+  // phpcs:enable
+
+  /**
    * Regular expression for a word.
    *
    * @var string
@@ -129,6 +144,7 @@ class Correcteur {
     . '(?<inlinetag>' . self::INLINE_TAG . ')|'
     . '(?<blocktag>' . self::BLOCK_TAG . ')|'
     . '(?<phone>' . self::PHONE_NUMBER . ')|'
+    . '(?<url>' . self::URL . ')|'
     . '(?<unit>' . self::UNIT . ')|'
     . '(?<number>' . self::NUMBER . ')|'
     . '(?<word>' . self::WORD . ')|'
@@ -181,6 +197,7 @@ class Correcteur {
       'inlinetag' => array_filter($matches['inlinetag']),
       'blocktag' => array_filter($matches['blocktag']),
       'phone' => array_filter($matches['phone']),
+      'url' => array_filter($matches['url']),
       'unit' => array_filter($matches['unit']),
       'number' => array_filter($matches['number']),
       'word' => array_filter($matches['word']),
@@ -302,6 +319,22 @@ class Correcteur {
   }
 
   /**
+   * Corrects a number.
+   *
+   * This replaces regular spaces used as thousands separators with narrow
+   * no-break spaces (U+202F).
+   *
+   * @param string $string
+   *   The number to correct.
+   *
+   * @return string
+   *   The corrected number.
+   */
+  public static function correctNumber(string $string): string {
+    return preg_replace('/(?<=\d) (?=\d)/u', "\u{202F}", $string);
+  }
+
+  /**
    * Corrects a unit.
    *
    * @param string $string
@@ -411,6 +444,7 @@ class Correcteur {
     $elements = &$types['all'];
     $inlineTags = &$types['inlinetag'];
     $blockTags = &$types['blocktag'];
+    $numbers = &$types['number'];
     $units = &$types['unit'];
     $phones = &$types['phone'];
     $words = &$types['word'];
@@ -439,6 +473,10 @@ class Correcteur {
     foreach ($units as $index => $element) {
       $first = $index === $firstIndex;
       $elements[$index] = self::correctUnit($element, $first);
+    }
+
+    foreach ($numbers as $index => $element) {
+      $elements[$index] = self::correctNumber($element);
     }
 
     foreach ($phones as $index => $element) {
