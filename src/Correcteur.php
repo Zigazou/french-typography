@@ -290,10 +290,10 @@ class Correcteur {
 
     // Clean spaces.
     if ($first) {
-      $string = ltrim($string);
+      $string = mb_ltrim($string);
     }
     if ($last) {
-      $string = rtrim($string);
+      $string = mb_rtrim($string);
     }
 
     $string = preg_replace(self::CLEANSPACES, '\1', $string);
@@ -317,7 +317,7 @@ class Correcteur {
       return $string;
     }
 
-    return ' ' . ltrim($string);
+    return ' ' . mb_ltrim($string);
   }
 
   /**
@@ -350,11 +350,11 @@ class Correcteur {
    */
   public static function correctInlineTag(string $text, bool $first, bool $last): string {
     if ($first) {
-      $text = ltrim($text);
+      $text = mb_ltrim($text);
     }
 
     if ($last) {
-      $text = rtrim($text);
+      $text = mb_rtrim($text);
     }
 
     $text = preg_replace('/\pZ+/u', ' ', $text);
@@ -376,7 +376,7 @@ class Correcteur {
    *   The corrected block tag.
    */
   public static function correctBlockTag(string $text, bool $first, bool $last): string {
-    return trim($text);
+    return mb_trim($text);
   }
 
   /**

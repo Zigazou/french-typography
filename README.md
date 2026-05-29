@@ -45,3 +45,6 @@ To install **FrenchTypography**, you can use Composer:
 composer require zigazou/french-typography
 ```
 
+## Running tests
+
+To run all the tests: `vendor/bin/phpunit test`

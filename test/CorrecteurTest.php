@@ -1,11 +1,39 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 use PHPUnit\Framework\TestCase;
 use Zigazou\FrenchTypography\Correcteur;
 
-final class CorrecteurTest extends TestCase
-{
-  public function testSplitElements(): void
-  {
+/**
+ * Tests for the Correcteur class.
+ */
+final class CorrecteurTest extends TestCase {
+
+  /**
+   * Returns a hexadecimal dump of a string.
+   *
+   * @param string $string
+   *   The string to convert.
+   *
+   * @return string
+   *   The hexadecimal representation of the string.
+   */
+  private static function hexDump(string $string): string {
+    $output = '';
+    for ($i = 0; $i < strlen($string); $i++) {
+      $output .= str_pad(dechex(ord($string[$i])), 2, '0', STR_PAD_LEFT) . " ";
+    }
+
+    return trim($output);
+  }
+
+  /**
+   * Test the splitting of a string into elements.
+   *
+   * (with the correct classification of each element)
+   */
+  public function testSplitElements(): void {
     $tests = [
       '' => [
         'all' => [],
@@ -127,6 +155,16 @@ final class CorrecteurTest extends TestCase
         'word' => [],
         'other' => [],
       ],
+      '403 925,64' => [
+        'all' => ['403 925,64'],
+        'inlinetag' => [],
+        'blocktag' => [],
+        'phone' => [],
+        'unit' => [],
+        'number' => [0 => '403 925,64'],
+        'word' => [],
+        'other' => [],
+      ],
       "a\x1Da" => [
         'all' => ["a", "\x1D", "a"],
         'inlinetag' => [],
@@ -155,20 +193,24 @@ final class CorrecteurTest extends TestCase
     }
   }
 
-  public function testCorrectUnit(): void
-  {
+  /**
+   * Test the correction of units, with or without a space before the unit.
+   */
+  public function testCorrectUnit(): void {
     $tests = [
       " €" => " €",
     ];
 
     foreach ($tests as $string => $expected) {
-      $actual = Correcteur::correctUnit($string, false);
-      $this->assertSame($expected, $actual, var_export($string, true));
+      $actual = Correcteur::correctUnit($string, FALSE);
+      $this->assertSame($expected, $actual, var_export($string, TRUE));
     }
   }
 
-  public function testCorrectOther(): void
-  {
+  /**
+   * Test the correction of numbers, with or without a space before the number.
+   */
+  public function testCorrectOther(): void {
     $tests = [
       "\n" => "\n",
       "\n\n" => "\n\n",
@@ -185,14 +227,21 @@ final class CorrecteurTest extends TestCase
         Correcteur::NOT_FIRST_ELEMENT,
         Correcteur::NOT_LAST_ELEMENT
       );
-      $this->assertSame($expected, $actual, var_export($string, true));
+      $this->assertSame($expected, $actual, var_export($string, TRUE));
     }
   }
 
-  public function testCorriger(): void
-  {
+  /**
+   * Test the correction of a string, with all the corrections applied.
+   */
+  public function testCorriger(): void {
     $tests = [
       'Economie' => 'Économie',
+      'Céramique' => 'Céramique',
+      'céramique' => 'céramique',
+      'Musée de la céramique' => 'Musée de la céramique',
+      'Musée de la Céramique' => 'Musée de la Céramique',
+      'Mus&eacute;e de la C&eacute;ramique' => 'Musée de la Céramique',
       'boeuf' => 'bœuf',
       NULL => '',
       '' => '',
@@ -210,6 +259,11 @@ final class CorrecteurTest extends TestCase
       'Hello,world!' => 'Hello, world !',
       'Hello... world!' => 'Hello… world !',
       '10€' => '10 €',
+      '10.000,00€' => '10.000,00 €',
+      '10.000,00k€' => '10.000,00 k€',
+      '10.000,00 €' => '10.000,00 €',
+      '10.000,00 k€' => '10.000,00 k€',
+      '403 925,64' => '403 925,64',
       '10k€' => '10 k€',
       '10 k€' => '10 k€',
       '"Hello"' => '« Hello »',
@@ -239,11 +293,19 @@ final class CorrecteurTest extends TestCase
       "a&nbsp;b" => "a b",
       " <strong> a </strong> " => "<strong> a </strong>",
       "a <strong> b </strong> c" => "a <strong> b </strong> c",
+      "http://example.com" => "http://example.com",
+      "example.com" => "example.com",
+      "site example.fr" => "site example.fr",
     ];
 
+    $index = 0;
     foreach ($tests as $string => $expected) {
       $actual = Correcteur::corriger($string, TRUE);
-      $this->assertSame($expected, $actual);
+
+      $message = "Test #$index: expected=" . self::hexDump($expected) . " => actual=" . self::hexDump($actual);
+      $this->assertSame($expected, $actual, $message);
+      $index++;
     }
   }
+
 }
