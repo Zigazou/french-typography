@@ -111,7 +111,7 @@ class Correcteur {
    *
    * @var string
    */
-  const NOT_A_WORD = '[^\pL\d]+';
+  const NOT_A_WORD = '[^\pL\d\x1D\x1E]+';
 
   /**
    * Regular expression for an inline tag.
