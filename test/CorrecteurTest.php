@@ -324,6 +324,9 @@ final class CorrecteurTest extends TestCase {
       "<strong>ABCD</strong> : EFGH" => "<strong>ABCD</strong> : EFGH",
       "ABCD. <strong>EFGH</strong>" => "ABCD. <strong>EFGH</strong>",
       "<strong>ABCD</strong>.<strong>EFGH</strong>" => "<strong>ABCD</strong>. <strong>EFGH</strong>",
+      "ABCD \"EFGH\"" => "ABCD « EFGH »",
+      "ABCD <strong>\"EFGH\"</strong>" => "ABCD <strong>« EFGH »</strong>",
+      "<strong>\"ABCD\"</strong> EFGH" => "<strong>« ABCD »</strong> EFGH",
     ];
 
     $index = 0;

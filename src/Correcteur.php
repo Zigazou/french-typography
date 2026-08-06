@@ -273,6 +273,8 @@ class Correcteur {
    *   Indicates if this is the first element.
    * @param bool $last
    *   Indicates if this is the last element.
+   * @param bool $quoteOpen
+   *   Indicates if a quote is currently open.
    *
    * @return string
    *   The corrected string.
@@ -281,6 +283,7 @@ class Correcteur {
     string $string,
     bool $first,
     bool $last,
+    bool &$quoteOpen = FALSE,
   ): string {
     static $unicodeFrom;
     static $unicodeTo;
@@ -297,11 +300,16 @@ class Correcteur {
     $string = preg_replace('/\s*([;:!?])\p{Zs}*/u', ' \1 ', $string);
 
     // Converts english double quotes to french guillemets.
-    if (!$last && mb_substr($string, -1, 1) === '"') {
+    if (!$quoteOpen && !$last && mb_substr($string, -1, 1) === '"') {
       $string = mb_substr($string, 0, -1) . '«';
+      $quoteOpen = TRUE;
     }
 
+    $hadClose = str_contains($string, '»');
     $string = preg_replace('/ ?"([ .,)]|\R|)/u', '»\1', $string);
+    if (!$hadClose && str_contains($string, '»')) {
+      $quoteOpen = FALSE;
+    }
     $string = preg_replace('/«\p{Zs}*/u', '« ', $string);
     $string = preg_replace('/\p{Zs}*»/u', ' »', $string);
 
@@ -483,10 +491,11 @@ class Correcteur {
       $elements[$index] = self::correctPhone($element);
     }
 
+    $quoteOpen = FALSE;
     foreach ($others as $index => $element) {
       $first = $index === $firstIndex;
       $last = $index === $lastIndex;
-      $elements[$index] = self::correctOther($element, $first, $last);
+      $elements[$index] = self::correctOther($element, $first, $last, $quoteOpen);
     }
 
     // Recombine all elements.
