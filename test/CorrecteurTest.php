@@ -327,6 +327,21 @@ final class CorrecteurTest extends TestCase {
       "ABCD \"EFGH\"" => "ABCD « EFGH »",
       "ABCD <strong>\"EFGH\"</strong>" => "ABCD <strong>« EFGH »</strong>",
       "<strong>\"ABCD\"</strong> EFGH" => "<strong>« ABCD »</strong> EFGH",
+      "A venir" => "À venir",
+      "A venir." => "À venir.",
+      "A venir !" => "À venir !",
+      "A pied" => "À pied",
+      "<p>A pied</p>" => "<p>À pied</p>",
+      "<p>A pied.</p>" => "<p>À pied.</p>",
+      "<p>Bonjour.</p>" => "<p>Bonjour.</p>",
+      "A, B, C" => "A, B, C",
+      "Prendre A et B" => "Prendre A et B",
+      "Prendre A B C" => "Prendre A B C",
+      "A travers la campagne" => "À travers la campagne",
+      "A San Francisco" => "À San Francisco",
+      "Il pleut. A San Francisco, il fait beau." => "Il pleut. À San Francisco, il fait beau.",
+      "A 3 ans, il savait déjà lire." => "À 3 ans, il savait déjà lire.",
+      "A 33 ans, il ne savait pas lire." => "À 33 ans, il ne savait pas lire.",
     ];
 
     $index = 0;

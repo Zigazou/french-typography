@@ -257,6 +257,59 @@ class Correcteur {
   }
 
   /**
+   * Corrects uppercase A.
+   *
+   * @param string $word
+   *   The word to correct.
+   * @param string $nextWord
+   *   The next word in the text.
+   *
+   * @return string
+   *   The corrected word.
+   */
+  public static function correctA(string $word, string $nextWord): string {
+    static $forbidden = array_fill_keys([
+      'le',
+      'les',
+      'mais',
+      'ou',
+      'et',
+      'donc',
+      'or',
+      'ni',
+      'car',
+      'de',
+      'par',
+      'pour',
+      'sans',
+      'chez',
+    ], 0);
+
+    // If the next word is only one letter, we don't want to change the "A".
+    if (mb_strlen($nextWord) === 1
+      && !ctype_digit(mb_substr($nextWord, 0, 1))
+    ) {
+      return $word;
+    }
+
+    $nextWordLower = mb_strtolower($nextWord);
+
+    // If the next word is in the list of forbidden words, we don't want to
+    // change the "A".
+    if (isset($forbidden[$nextWordLower])) {
+      return $word;
+    }
+
+    // If the next word starts with an uppercase letter, we consider it is a.
+    // Proper noun and we don't want to change the "A".
+    if (ctype_upper(mb_substr($nextWord, 0, 1))) {
+      return 'À';
+    }
+
+    return 'À';
+  }
+
+  /**
    * Corrects a string that is not a word.
    *
    * This includes:
@@ -275,6 +328,8 @@ class Correcteur {
    *   Indicates if this is the last element.
    * @param bool $quoteOpen
    *   Indicates if a quote is currently open.
+   * @param bool $nextIsBlockTag
+   *   Indicates if the next element is a block tag.
    *
    * @return string
    *   The corrected string.
@@ -284,6 +339,7 @@ class Correcteur {
     bool $first,
     bool $last,
     bool &$quoteOpen = FALSE,
+    bool $nextIsBlockTag = FALSE,
   ): string {
     static $unicodeFrom;
     static $unicodeTo;
@@ -293,11 +349,21 @@ class Correcteur {
     $string = str_replace($unicodeFrom, $unicodeTo, $string);
 
     // No space before, one space after dot and comma.
-    $string = preg_replace('/\s*([.,])\p{Zs}*/u', '\1 ', $string);
+    if ($nextIsBlockTag) {
+      $string = preg_replace('/\s*([.,])\p{Zs}*/u', '\1', $string);
+    }
+    else {
+      $string = preg_replace('/\s*([.,])\p{Zs}*/u', '\1 ', $string);
+    }
 
     // One thin-space before, one space after semicolon, colon,
     // exclamation mark and question mark.
-    $string = preg_replace('/\s*([;:!?])\p{Zs}*/u', ' \1 ', $string);
+    if ($nextIsBlockTag) {
+      $string = preg_replace('/\s*([;:!?])\p{Zs}*/u', ' \1', $string);
+    }
+    else {
+      $string = preg_replace('/\s*([;:!?])\p{Zs}*/u', ' \1 ', $string);
+    }
 
     // Converts english double quotes to french guillemets.
     if (!$quoteOpen && !$last && mb_substr($string, -1, 1) === '"') {
@@ -491,11 +557,40 @@ class Correcteur {
       $elements[$index] = self::correctPhone($element);
     }
 
+    foreach ($words as $index => $element) {
+      // Only correct the "A" if it is followed by a word.
+      if ($element !== 'A') {
+        continue;
+      }
+
+      // Next element must be a space.
+      $nextElement = $elements[$index + 1] ?? NULL;
+      if ($nextElement !== ' ') {
+        continue;
+      }
+
+      // Get the next word, if any. It must be the direct next element, not the
+      // next word in the text.
+      $nextWord = $words[$index + 2] ?? $numbers[$index + 2] ?? '';
+
+      if ($nextWord === '') {
+        continue;
+      }
+
+      $elements[$index] = self::correctA($element, $nextWord);
+    }
+
     $quoteOpen = FALSE;
     foreach ($others as $index => $element) {
       $first = $index === $firstIndex;
       $last = $index === $lastIndex;
-      $elements[$index] = self::correctOther($element, $first, $last, $quoteOpen);
+      $elements[$index] = self::correctOther(
+        $element,
+        $first,
+        $last,
+        $quoteOpen,
+        isset($blockTags[$index + 1])
+      );
     }
 
     // Recombine all elements.
