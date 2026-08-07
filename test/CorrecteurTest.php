@@ -342,6 +342,8 @@ final class CorrecteurTest extends TestCase {
       "Il pleut. A San Francisco, il fait beau." => "Il pleut. À San Francisco, il fait beau.",
       "A 3 ans, il savait déjà lire." => "À 3 ans, il savait déjà lire.",
       "A 33 ans, il ne savait pas lire." => "À 33 ans, il ne savait pas lire.",
+      '/!\\ Attention à la marche.' => '⚠️ Attention à la marche.',
+      '/ ! \\ Attention à la marche.' => '⚠️ Attention à la marche.',
     ];
 
     $index = 0;
