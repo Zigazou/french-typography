@@ -35,6 +35,20 @@ class Correcteur {
   const NOT_LAST_ELEMENT = FALSE;
 
   /**
+   * Identify the opening of a superscript for ordinal numbers.
+   *
+   * @var string
+   */
+  const ORDINAL_SUP_OPEN = "\x1F";
+
+  /**
+   * Identify the closing of a superscript for ordinal numbers.
+   *
+   * @var string
+   */
+  const ORDINAL_SUP_CLOSE = "\x1C";
+
+  /**
    * Regular expression for a unit.
    *
    * @var string
@@ -77,6 +91,7 @@ class Correcteur {
    */
   // phpcs:disable
   const NUMBER = '-?(?'
+    . '|(?<!\pL)(?:\d+|[IVXLCDM]+)\s*(?:er|re|ème|e)(?!\pL)'
     . '|\d{1,3}(?: \d{3})+(?:[.,]\d+)?'
     . '|\d{1,3}.\d{3}(?:.\d{3})+(?:,\d+)?'
     . '|\d{1,3}.\d{3},\d+'
@@ -405,6 +420,16 @@ class Correcteur {
    *   The corrected number.
    */
   public static function correctNumber(string $string): string {
+    $string = preg_replace_callback(
+      '/(?<!\pL)(\d+|[IVXLCDM]+)\s*(er|re|ème|e)(?!\pL)/u',
+      static function (array $matches): string {
+        $suffix = $matches[2] === 'ème' ? 'e' : $matches[2];
+        return $matches[1] . self::ORDINAL_SUP_OPEN
+          . $suffix . self::ORDINAL_SUP_CLOSE;
+      },
+      $string
+    );
+
     return preg_replace('/(?<=\d) (?=\d)/u', "\u{202F}", $string);
   }
 
@@ -599,7 +624,19 @@ class Correcteur {
     // Restore the HTML tags if the text is an HTML text.
     if ($isHTML) {
       $html->codes = htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
+      $html->codes = str_replace(
+        [self::ORDINAL_SUP_OPEN, self::ORDINAL_SUP_CLOSE],
+        ['<sup>', '</sup>'],
+        $html->codes
+      );
       $text = (string) $html;
+    }
+    else {
+      $text = str_replace(
+        [self::ORDINAL_SUP_OPEN, self::ORDINAL_SUP_CLOSE],
+        ['<sup>', '</sup>'],
+        $text
+      );
     }
 
     return $text;

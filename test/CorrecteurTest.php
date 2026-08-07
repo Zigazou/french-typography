@@ -344,6 +344,13 @@ final class CorrecteurTest extends TestCase {
       "A 33 ans, il ne savait pas lire." => "À 33 ans, il ne savait pas lire.",
       '/!\\ Attention à la marche.' => '⚠️ Attention à la marche.',
       '/ ! \\ Attention à la marche.' => '⚠️ Attention à la marche.',
+      'XIIe siècle' => 'XII<sup>e</sup> siècle',
+      'XIIème siècle' => 'XII<sup>e</sup> siècle',
+      'XII ème siècle' => 'XII<sup>e</sup> siècle',
+      '12e siècle' => '12<sup>e</sup> siècle',
+      '1er arrivé' => '1<sup>er</sup> arrivé',
+      '1re arrivée' => '1<sup>re</sup> arrivée',
+      '1er arrivé, 2e arrivé, 3e arrivé' => '1<sup>er</sup> arrivé, 2<sup>e</sup> arrivé, 3<sup>e</sup> arrivé',
     ];
 
     $index = 0;
