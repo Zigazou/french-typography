@@ -351,6 +351,10 @@ final class CorrecteurTest extends TestCase {
       '1er arrivé' => '1<sup>er</sup> arrivé',
       '1re arrivée' => '1<sup>re</sup> arrivée',
       '1er arrivé, 2e arrivé, 3e arrivé' => '1<sup>er</sup> arrivé, 2<sup>e</sup> arrivé, 3<sup>e</sup> arrivé',
+      'Le premier arrivé' => 'Le premier arrivé',
+      'De Rouen' => 'De Rouen',
+      'Ce chemin est long' => 'Ce chemin est long',
+      'Le Xe siècle' => 'Le X<sup>e</sup> siècle',
     ];
 
     $index = 0;

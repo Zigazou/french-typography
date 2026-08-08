@@ -91,7 +91,7 @@ class Correcteur {
    */
   // phpcs:disable
   const NUMBER = '-?(?'
-    . '|(?<!\pL)(?:\d+|[IVXLCDM]+)\s*(?:er|re|ème|e)(?!\pL)'
+    . '|(?<!\pL)(?:\d+|[IVX]|[IVXLCDM]{2,})\s*(?:er|re|ème|e)(?!\pL)'
     . '|\d{1,3}(?: \d{3})+(?:[.,]\d+)?'
     . '|\d{1,3}.\d{3}(?:.\d{3})+(?:,\d+)?'
     . '|\d{1,3}.\d{3},\d+'
@@ -421,7 +421,7 @@ class Correcteur {
    */
   public static function correctNumber(string $string): string {
     $string = preg_replace_callback(
-      '/(?<!\pL)(\d+|[IVXLCDM]+)\s*(er|re|ème|e)(?!\pL)/u',
+      '/(?<!\pL)(\d+|[IVX]|[IVXLCDM]{2,})\s*(er|re|ème|e)(?!\pL)/u',
       static function (array $matches): string {
         $suffix = $matches[2] === 'ème' ? 'e' : $matches[2];
         return $matches[1] . self::ORDINAL_SUP_OPEN
