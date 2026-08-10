@@ -21,21 +21,27 @@ $b = Correcteur::corriger('<div class="d">Bonjour le "monde"!</div>', TRUE);
 
 ## Features
 
-- Addition of non-breaking thin spaces before double punctuation marks (: ; ? !)
-- Convert English double quotes (" ") into French guillemets (« »)
-- Adjustment of spaces in units of measurement
-- Restore accents on uppercased first letters (Ecole → École)
-- Corrects multiple consecutive exclamation/question mark
-- Simple quotes are replaced with typographic quote
-- <->, -> and <- are replaced with ↔, → and ←
-- <=>, => and <= are replaced with ⇔, ⇒ and ⇐
-- (c) and (C) are replaced with ©
-- (r) and (R) are replaced with ®
-- french phone numbers are formatted (0999999999 → 09 99 99 99 99)
-- number followed by units will be separated by a no-break space
-- Corrects missing œ ligatures (oeil → œil)
-- Consecutive spaces are reduced to one space
-- Leading and trailing spaces are trimmed
+- Adds a narrow no-break space before `:`, `;`, `!`, and `?`, and normalizes
+  the following space.
+- Normalizes spacing around periods and commas, including at HTML block
+  boundaries.
+- Converts English double quotes to French guillemets with narrow no-break
+  spaces (`"Hello"` → `« Hello »`) and straight apostrophes to typographic
+  apostrophes.
+- Converts three dots to an ellipsis and normalizes repeated or mixed `!` and
+  `?` punctuation.
+- Replaces common ASCII sequences with Unicode equivalents: arrows, copyright,
+  registered, trademark, sound-recording copyright, warning, and emoticons.
+- Restores selected accents on initial capital letters and missing `œ`/`Œ`
+  ligatures (for example, `Economie` → `Économie` and `boeuf` → `bœuf`).
+- Corrects the preposition `A` to `À` where appropriate.
+- Formats French phone numbers (`0999999999` → `09 99 99 99 99`).
+- Uses a no-break space between numbers and supported units or currencies, and
+  narrow no-break spaces as thousands separators.
+- Converts ordinal suffixes to superscript HTML (`1er` → `1<sup>er</sup>`).
+- Collapses consecutive spaces, preserves line breaks, and trims leading and
+  trailing whitespace.
+- Supports HTML input without altering tags or URLs.
 
 ## Installation
 
